@@ -1,0 +1,18 @@
+{
+  "host": "0.0.0.0",
+  "port": 8485,
+  "expired_duration": "30s",
+  "keepalive_duration": "10s",
+  "auth_cfg": [
+    {
+      "type": 0,
+      "username": "UMU",
+      "data": "123456"
+    },
+    {
+      "type": 1,
+      "username": "UMU",
+      "data": "207cf410532f92a47dee245ce9b11ff71f578ebd763eb3bbea44ebd043d018fb"
+    }
+  ]
+}

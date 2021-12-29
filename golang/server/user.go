@@ -106,24 +106,14 @@ func sendResponse(w http.ResponseWriter, data interface{}) {
 }
 
 func (s *Server) auth(info *loginParams) bool {
-	isValidUserName := false
-	for _, userName := range s.cfg.UserNames {
-		if userName == info.UserName {
-			isValidUserName = true
-			break
-		}
-	}
-
-	if isValidUserName {
-		if info.Type == config.AuthTypeSM3 {
-			for _, sm3Auth := range s.cfg.SM3AuthCfg {
-				if sm3Auth.UserName == info.UserName && sm3Auth.Data == info.Data {
-					return true
-				}
+	if info.Type == config.AuthTypeSM3 {
+		for _, sm3Auth := range s.cfg.SM3AuthCfg {
+			if sm3Auth.UserName == info.UserName && sm3Auth.Data == info.Data {
+				return true
 			}
-		} else {
-			// TODO: Dynamic( AuthTypeCode、AuthTypeToken ) verification is required
 		}
+	} else {
+		// TODO: Dynamic( AuthTypeCode、AuthTypeToken ) verification is required
 	}
 
 	return false

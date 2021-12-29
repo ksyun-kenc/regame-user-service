@@ -3,9 +3,6 @@
   "port": 8545,
   "expired_duration": "30s",
   "keepalive_duration": "10s",
-  "usernames": [
-    "UMU"
-  ],
   "sm3_auth_cfg": [
     {
       "username": "UMU",

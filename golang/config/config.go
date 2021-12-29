@@ -29,7 +29,6 @@ type Config struct {
 	ExpiredDuration      time.Duration   `json:"-"`
 	KeepAliveDurationStr string          `json:"keepalive_duration"`
 	KeepAliveDuration    time.Duration   `json:"-"`
-	UserNames            []string        `json:"usernames"`
 	SM3AuthCfg           []SM3AuthConfig `json:"sm3_auth_cfg"`
 }
 

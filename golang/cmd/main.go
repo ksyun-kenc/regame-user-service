@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -18,17 +19,18 @@ func init() {
 }
 
 func main() {
+	if len(os.Args) <= 1 {
+		fmt.Println("Usage:", os.Args[0], "<config-file-path>")
+		return
+	}
+
 	flag.Parse()
 	defer glog.Flush()
 
-	var err error
-	cfg := &config.DefaultConfig
-	if len(os.Args) > 1 {
-		cfg, err = config.ParseConfigFromJsonFile(os.Args[1])
-		if err != nil {
-			glog.Errorf("ParseConfigFromJsonFile err %s\n", err)
-			return
-		}
+	cfg, err := config.ParseConfigFromJsonFile(os.Args[1])
+	if err != nil {
+		glog.Errorf("ParseConfigFromJsonFile err %s\n", err)
+		return
 	}
 	err = cfg.Validate()
 	if err != nil {

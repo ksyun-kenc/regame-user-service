@@ -10,14 +10,6 @@ go build -ldflags "-s -w" -o service cmd/main.go
 
 ## Run
 
-### use default config
-
-```sh
-./service
-```
-
-### use config.json
-
 ```sh
 ./service config/config.json
 ```

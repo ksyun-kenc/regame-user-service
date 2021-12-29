@@ -17,25 +17,6 @@ const (
 	AuthTypeToken
 )
 
-var DefaultConfig = Config{
-	Host:                 "0.0.0.0",
-	Port:                 8545,
-	ExpiredDurationStr:   "30s",
-	KeepAliveDurationStr: "10s",
-	AuthCfg: []AuthConfig{
-		{
-			Type:     AuthTypeCode,
-			UserName: "UMU",
-			Data:     "123456",
-		},
-		{
-			Type:     AuthTypeSM3,
-			UserName: "UMU",
-			Data:     "207cf410532f92a47dee245ce9b11ff71f578ebd763eb3bbea44ebd043d018fb",
-		},
-	},
-}
-
 type AuthConfig struct {
 	Version  int    `json:"version"`
 	Type     int    `json:"type"`
@@ -88,7 +69,7 @@ func ParseConfigFromJsonFile(file string) (*Config, error) {
 	}
 	defer f.Close()
 
-	result := DefaultConfig
+	result := Config{}
 	dec := json.NewDecoder(f)
 	err = dec.Decode(&result)
 	if err != nil {

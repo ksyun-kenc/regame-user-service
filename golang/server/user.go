@@ -56,6 +56,13 @@ type rpcResponse struct {
 	Result  interface{}      `json:"result,omitempty"`
 }
 
+type loginParams struct {
+	Version  int    `json:"version"`
+	Type     int    `json:"type"`
+	UserName string `json:"username"`
+	Data     string `json:"data"`
+}
+
 type loginResult struct {
 	SessionId string        `json:"session_id"`
 	Interval  time.Duration `json:"interval"`
@@ -98,12 +105,27 @@ func sendResponse(w http.ResponseWriter, data interface{}) {
 	_, _ = w.Write(b)
 }
 
-func (s *Server) auth(params *config.AuthConfig) bool {
-	for _, authCfg := range s.cfg.AuthCfg {
-		if authCfg == *params {
-			return true
+func (s *Server) auth(info *loginParams) bool {
+	isValidUserName := false
+	for _, userName := range s.cfg.UserNames {
+		if userName == info.UserName {
+			isValidUserName = true
+			break
 		}
 	}
+
+	if isValidUserName {
+		if info.Type == config.AuthTypeSM3 {
+			for _, sm3Auth := range s.cfg.SM3AuthCfg {
+				if sm3Auth.UserName == info.UserName && sm3Auth.Data == info.Data {
+					return true
+				}
+			}
+		} else {
+			// TODO: Dynamic( AuthTypeCode、AuthTypeToken ) verification is required
+		}
+	}
+
 	return false
 }
 
@@ -114,17 +136,17 @@ func (s *Server) rpcLoginHandler(w http.ResponseWriter, req *rpcRequest) {
 		return
 	}
 
-	reqPrams := &config.AuthConfig{}
-	err := json.Unmarshal(*req.Params, reqPrams)
+	reqParams := &loginParams{}
+	err := json.Unmarshal(*req.Params, reqParams)
 	if err != nil {
 		res := buildRpcError(req.Id, rpcCodeInvalidRequest)
 		sendResponse(w, res)
 		return
 	}
 
-	if !s.auth(reqPrams) {
+	if !s.auth(reqParams) {
 		glog.Errorf("login type %d username %s data %s failed\n",
-			reqPrams.Type, reqPrams.UserName, reqPrams.Data)
+			reqParams.Type, reqParams.UserName, reqParams.Data)
 		res := buildRpcError(req.Id, rpcCodeAuthenticationFailed)
 		sendResponse(w, res)
 		return
@@ -148,7 +170,7 @@ func (s *Server) rpcLoginHandler(w http.ResponseWriter, req *rpcRequest) {
 	res := buildRpcResult(req.Id, result)
 	sendResponse(w, res)
 	glog.Infof("login type %d username %s data %s ok, session_id %s\n",
-		reqPrams.Type, reqPrams.UserName, reqPrams.Data, session.Id)
+		reqParams.Type, reqParams.UserName, reqParams.Data, session.Id)
 }
 
 func (s *Server) rpcKeepAliveHandler(w http.ResponseWriter, req *rpcRequest) {
@@ -158,8 +180,8 @@ func (s *Server) rpcKeepAliveHandler(w http.ResponseWriter, req *rpcRequest) {
 		return
 	}
 
-	reqPrams := &keepAliveParams{}
-	err := json.Unmarshal(*req.Params, reqPrams)
+	reqParams := &keepAliveParams{}
+	err := json.Unmarshal(*req.Params, reqParams)
 	if err != nil {
 		res := buildRpcError(req.Id, rpcCodeInvalidRequest)
 		sendResponse(w, res)
@@ -168,16 +190,16 @@ func (s *Server) rpcKeepAliveHandler(w http.ResponseWriter, req *rpcRequest) {
 
 	s.Lock()
 	defer s.Unlock()
-	session, ok := s.sessions[reqPrams.SessionId]
+	session, ok := s.sessions[reqParams.SessionId]
 	if !ok {
-		glog.Errorf("keepalive session_id %s not found\n", reqPrams.SessionId)
+		glog.Errorf("keepalive session_id %s not found\n", reqParams.SessionId)
 		res := buildRpcError(req.Id, rpcCodeSessionNotFound)
 		sendResponse(w, res)
 		return
 	}
 
 	if isTimeExpired(session.UpdateTime, s.cfg.ExpiredDuration) {
-		glog.Errorf("keepalive session_id %s expired\n", reqPrams.SessionId)
+		glog.Errorf("keepalive session_id %s expired\n", reqParams.SessionId)
 		res := buildRpcError(req.Id, rpcCodeSessionExpired)
 		sendResponse(w, res)
 		return
@@ -200,8 +222,8 @@ func (s *Server) rpcLogoutHandler(w http.ResponseWriter, req *rpcRequest) {
 		return
 	}
 
-	reqPrams := &logoutParams{}
-	err := json.Unmarshal(*req.Params, reqPrams)
+	reqParams := &logoutParams{}
+	err := json.Unmarshal(*req.Params, reqParams)
 	if err != nil {
 		res := buildRpcError(nil, rpcCodeInvalidRequest)
 		sendResponse(w, res)
@@ -210,10 +232,10 @@ func (s *Server) rpcLogoutHandler(w http.ResponseWriter, req *rpcRequest) {
 
 	s.Lock()
 	defer s.Unlock()
-	delete(s.sessions, reqPrams.SessionId)
+	delete(s.sessions, reqParams.SessionId)
 
 	w.WriteHeader(http.StatusOK)
-	glog.Infof("logout session_id %s logout\n", reqPrams.SessionId)
+	glog.Infof("logout session_id %s logout\n", reqParams.SessionId)
 }
 
 func (s *Server) UserHandler(w http.ResponseWriter, r *http.Request) {

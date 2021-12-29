@@ -17,21 +17,20 @@ const (
 	AuthTypeToken
 )
 
-type AuthConfig struct {
-	Version  int    `json:"version"`
-	Type     int    `json:"type"`
+type SM3AuthConfig struct {
 	UserName string `json:"username"`
 	Data     string `json:"data"`
 }
 
 type Config struct {
-	Host                 string        `json:"host"`
-	Port                 int           `json:"port"`
-	ExpiredDurationStr   string        `json:"expired_duration"`
-	ExpiredDuration      time.Duration `json:"-"`
-	KeepAliveDurationStr string        `json:"keepalive_duration"`
-	KeepAliveDuration    time.Duration `json:"-"`
-	AuthCfg              []AuthConfig  `json:"auth_cfg"`
+	Host                 string          `json:"host"`
+	Port                 int             `json:"port"`
+	ExpiredDurationStr   string          `json:"expired_duration"`
+	ExpiredDuration      time.Duration   `json:"-"`
+	KeepAliveDurationStr string          `json:"keepalive_duration"`
+	KeepAliveDuration    time.Duration   `json:"-"`
+	UserNames            []string        `json:"usernames"`
+	SM3AuthCfg           []SM3AuthConfig `json:"sm3_auth_cfg"`
 }
 
 func (c *Config) Validate() error {

@@ -19,7 +19,7 @@ go build -ldflags "-s -w" -o service cmd/main.go
 - login
 ```sh
 # run
-curl -X POST -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","id":0,"method":"login","params":{"version":0,"username":"UMU","type":0,"data":"123456"}}' http://127.0.0.1:8545/user
+curl -X POST -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","id":0,"method":"login","params":{"version":0,"username":"UMU","type":1,"data":"207cf410532f92a47dee245ce9b11ff71f578ebd763eb3bbea44ebd043d018fb"}}' http://127.0.0.1:8545/user
 # response
 {"jsonrpc":"2.0","id":0,"result":{"session_id":"ae692959-32e4-4f88-9c0f-13c25380baee","interval":10}}
 ```

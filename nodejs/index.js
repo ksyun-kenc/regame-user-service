@@ -18,8 +18,9 @@ const jayson = require('jayson')
 
 const server = jayson.server({
   login: function (args, callback) {
-    if (args.version !== 0) {
+    if (1 < args.version) {
       callback({code: 1, message: 'Unsupported version!'})
+      console.log('login error: Unsupported version!', args)
       return
     }
 

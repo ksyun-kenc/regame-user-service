@@ -1,0 +1,9 @@
+{
+  "host": "0.0.0.0",
+  "port": 8545,
+  "user_service" : {
+    "session_expiration": "35s",
+    "keepalive_duration": "10s",
+    "pd_addr": "tikv://192.168.0.155:2379"
+  }
+}

@@ -1,0 +1,17 @@
+# go
+go.sum
+
+# IDE
+.idea/
+
+# macOS
+.DS_Store
+*.darwin
+
+# windows
+*.exe
+
+*.log
+
+# project
+public/

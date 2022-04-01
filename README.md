@@ -2,20 +2,8 @@
 
 `regame-user-service` is a JSON-RPC service for [鎏光/regame](https://github.com/ksyun-kenc/liuguang) to maintain user state.
 
-## Install
+Choose your preferred programming language implementation:
 
-```sh
-npm install
-```
+- [Node.js](nodejs/): Just a demo, don't use it in a production environment.
 
-## Run
-
-```sh
-node index.js
-```
-
-## Test
-
-```sh
-curl -X POST -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","id":0,"method":"login","params":{"version":0,"username":"UMU","type":0,"data":"123456"}}' http://127.0.0.1:8545/
-```
+- [Go](go/): Rely on tikv.

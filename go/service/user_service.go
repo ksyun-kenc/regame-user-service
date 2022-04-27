@@ -62,7 +62,7 @@ type rpcError struct {
 
 type rpcRequest struct {
 	JsonRpc string           `json:"jsonrpc"`
-	Id      *json.RawMessage `json:"id"`
+	Id      *json.RawMessage `json:"id,omitempty"`
 	Method  string           `json:"method"`
 	Params  *json.RawMessage `json:"params"`
 }

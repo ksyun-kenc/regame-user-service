@@ -23,26 +23,6 @@ const (
 
 const SM3PasswordLength = 64
 
-const (
-	rpcCodeAuthenticationFailed = -101
-	rpcCodeSessionNotFound      = -201
-	rpcCodeSessionExpired       = -202
-
-	rpcCodeParseError     = -32700
-	rpcCodeInvalidRequest = -32600
-	rpcCodeMethodNotFound = -32601
-)
-
-var rpcCodeText = map[int]string{
-	rpcCodeAuthenticationFailed: "authentication failed",
-	rpcCodeSessionNotFound:      "session not found",
-	rpcCodeSessionExpired:       "session expired",
-
-	rpcCodeParseError:     "parse error",
-	rpcCodeInvalidRequest: "invalid request",
-	rpcCodeMethodNotFound: "method not found",
-}
-
 type UserSession struct {
 	Id         string
 	CreateTime time.Time
@@ -53,25 +33,6 @@ type UserService struct {
 	sync.Mutex
 	cfg      *config.UserServiceConfig
 	sessions map[string]*UserSession
-}
-
-type rpcError struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-}
-
-type rpcRequest struct {
-	JsonRpc string           `json:"jsonrpc"`
-	Id      *json.RawMessage `json:"id,omitempty"`
-	Method  string           `json:"method"`
-	Params  *json.RawMessage `json:"params"`
-}
-
-type rpcResponse struct {
-	JsonRpc string           `json:"jsonrpc"`
-	Id      *json.RawMessage `json:"id,omitempty"`
-	Error   interface{}      `json:"error,omitempty"`
-	Result  interface{}      `json:"result,omitempty"`
 }
 
 type loginParams struct {
@@ -115,30 +76,6 @@ func (us *UserService) CleanExpiredSession() {
 	}
 }
 
-func buildRpcError(id *json.RawMessage, code int) *rpcResponse {
-	return &rpcResponse{
-		JsonRpc: "2.0",
-		Id:      id,
-		Error: &rpcError{
-			Code:    code,
-			Message: rpcCodeText[code],
-		},
-	}
-}
-
-func buildRpcResult(id *json.RawMessage, result interface{}) *rpcResponse {
-	return &rpcResponse{
-		JsonRpc: "2.0",
-		Id:      id,
-		Result:  result,
-	}
-}
-
-func sendResponse(w http.ResponseWriter, data interface{}) {
-	b, _ := json.Marshal(data)
-	_, _ = w.Write(b)
-}
-
 func (us *UserService) verify(info *loginParams) bool {
 	switch info.Type {
 	case AuthTypeCode:
@@ -172,7 +109,7 @@ func (us *UserService) rpcLoginHandler(w http.ResponseWriter, req *rpcRequest) {
 	reqParams := &loginParams{}
 	err := json.Unmarshal(*req.Params, reqParams)
 	if err != nil {
-		res := buildRpcError(req.Id, rpcCodeInvalidRequest)
+		res := buildRpcError(req.Id, rpcCodeInvalidParams)
 		sendResponse(w, res)
 		return
 	}
@@ -216,7 +153,7 @@ func (us *UserService) rpcKeepAliveHandler(w http.ResponseWriter, req *rpcReques
 	reqParams := &keepAliveParams{}
 	err := json.Unmarshal(*req.Params, reqParams)
 	if err != nil {
-		res := buildRpcError(req.Id, rpcCodeInvalidRequest)
+		res := buildRpcError(req.Id, rpcCodeInvalidParams)
 		sendResponse(w, res)
 		return
 	}
@@ -258,7 +195,7 @@ func (us *UserService) rpcLogoutHandler(w http.ResponseWriter, req *rpcRequest) 
 	reqParams := &logoutParams{}
 	err := json.Unmarshal(*req.Params, reqParams)
 	if err != nil {
-		res := buildRpcError(nil, rpcCodeInvalidRequest)
+		res := buildRpcError(nil, rpcCodeInvalidParams)
 		sendResponse(w, res)
 		return
 	}
@@ -277,7 +214,7 @@ func (us *UserService) UserHandler(resWriter http.ResponseWriter, r *http.Reques
 	err := dec.Decode(req)
 	if err != nil {
 		glog.Error("Decode failed: ", err)
-		res := buildRpcError(nil, rpcCodeParseError)
+		res := buildRpcError(nil, rpcCodeParseErrorNotWellFormed)
 		sendResponse(resWriter, res)
 		return
 	}
